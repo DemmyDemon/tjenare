@@ -196,13 +196,12 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 		}
 	}()
 
-	w.WriteHeader(http.StatusOK)
-	w.Header().Add("content-length", strconv.FormatInt(fileInfo.Size(), 10))
-	w.Header().Add("last-modified", fileInfo.ModTime().Format(http.TimeFormat))
+	w.Header().Set("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
+	w.Header().Set("Last-Modified", fileInfo.ModTime().Format(http.TimeFormat))
 
 	contentType := mime.TypeByExtension(filepath.Ext(path))
 	if contentType != "" {
-		w.Header().Add("content-type", contentType)
+		w.Header().Set("Content-Type", contentType)
 	}
 
 	n, err := io.Copy(w, file)
