@@ -187,7 +187,12 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 		log.Printf("[%s] Could not open %s: %s", r.RemoteAddr, path, err)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Printf("Failed to close %q: %s", path, err)
+		}
+	}()
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-length", strconv.FormatInt(fileInfo.Size(), 10))
