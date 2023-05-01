@@ -28,9 +28,18 @@ type DomainConfig struct {
 }
 
 type BackendConfig struct {
-	Target       string                 `json:"target"`
-	URL          *url.URL               `json:"-"`
-	ReverseProxy *httputil.ReverseProxy `json:"-"`
+	Target       string
+	URL          *url.URL
+	ReverseProxy *httputil.ReverseProxy
+}
+
+func (bc *BackendConfig) UnmarshalJSON(b []byte) error {
+	json.Unmarshal(b, &bc.Target)
+	return nil
+}
+
+func (bc *BackendConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal([]byte(bc.Target))
 }
 
 func Load(path string) (*ServerConfig, error) {
