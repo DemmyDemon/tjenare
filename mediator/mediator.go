@@ -131,6 +131,7 @@ func (med Mediator) getConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config,
 		log.Printf("Loaded certificate (%q,%q)\n", domconf.CertFile, domconf.KeyFile)
 		config := &tls.Config{
 			Certificates: []tls.Certificate{cert},
+			NextProtos:   []string{"h2", "http/1.1"}, // Enable HTTP/2
 		}
 		domconf.CertConfig = config
 	}
