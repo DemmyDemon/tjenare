@@ -20,13 +20,14 @@ func main() {
 
 	var cfg *config.ServerConfig
 	var err error
-	if len(os.Args) > 1 {
+	switch {
+	case len(os.Args) > 1:
 		log.Printf("Loading configuration from command line argument: %s", os.Args[1])
 		cfg, err = config.Load(os.Args[1])
-	} else if os.Getenv("CONFIG") != "" {
+	case os.Getenv("CONFIG") != "":
 		log.Printf("Loading configuration from CONFIG environment variable: %s", os.Getenv("CONFIG"))
 		cfg, err = config.Load(os.Getenv("CONFIG"))
-	} else {
+	default:
 		log.Printf("Loading hardcoded default configuration from /etc/tjenare.json")
 		cfg, err = config.Load("/etc/tjenare.json")
 	}
@@ -60,5 +61,4 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c // Block here until the interrupt comes in
 	log.Println("Received interrupt")
-	os.Exit(1)
 }

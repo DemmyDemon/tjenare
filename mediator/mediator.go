@@ -164,7 +164,7 @@ func (med Mediator) handoff(domconfig *config.DomainConfig, domain, subdomain st
 func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain string, w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	if strings.HasSuffix(path, "/") {
-		path = path + "index.html"
+		path += "index.html"
 	}
 	path = filepath.Clean(domconfig.BasePath + subdomain + domconfig.Subdir + path)
 
