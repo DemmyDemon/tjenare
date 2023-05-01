@@ -1,0 +1,18 @@
+{
+    "tlsport" : 443,
+    "insecureport" : 80,
+    "logfile" : "/var/log/tjenare.log",
+    "domains" : {
+        "example.com" : {
+            "basepath" : "/var/www/html/example/",
+            "subdir" : "/public_html/",
+            "default" : "www",
+            "certfile" : "/etc/letsencrypt/live/example.com/fullchain.pem",
+            "keyfile" : "/etc/letsencrypt/live/example.com/privkey.pem",
+            "backends" : {
+                "spork" : "http://localhost:9192/",
+                "extra" : "http://localhost:8080/"
+            }
+        }
+    }
+}
