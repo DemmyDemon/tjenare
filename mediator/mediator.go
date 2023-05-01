@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -166,7 +167,8 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 	if strings.HasSuffix(path, "/") {
 		path += "index.html"
 	}
-	path = filepath.Clean(domconfig.BasePath + subdomain + domconfig.Subdir + path)
+	path = filepath.Join(domconfig.BasePath, subdomain, domconfig.Subdir, path)
+	path = filepath.Clean(path)
 
 	fileInfo, err := os.Stat(path)
 	if err != nil {
@@ -197,6 +199,12 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-length", strconv.FormatInt(fileInfo.Size(), 10))
 	w.Header().Add("last-modified", fileInfo.ModTime().Format(http.TimeFormat))
+
+	contentType := mime.TypeByExtension(filepath.Ext(path))
+	if contentType != "" {
+		w.Header().Add("content-type", contentType)
+	}
+
 	n, err := io.Copy(w, file)
 	if err != nil {
 		log.Printf("[%s] Error encountered sending %s: %s", r.RemoteAddr, path, err)
