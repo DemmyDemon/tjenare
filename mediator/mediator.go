@@ -32,6 +32,7 @@ func Begin(cfg *config.ServerConfig) {
 			GetConfigForClient: mediator.getConfigForClient,
 		},
 	}
+	log.Printf("Listening with TLS on :%d\n", cfg.TLSPort)
 	log.Fatal(srv.ListenAndServeTLS("", ""))
 }
 
@@ -97,6 +98,9 @@ func (med Mediator) createReverseProxy(backend *config.BackendConfig) (*httputil
 }
 
 func (med Mediator) getConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
+	if hello.ServerName == "" {
+		return nil, errors.New("TLS ClientHello has no ServerName")
+	}
 	domain, err := publicsuffix.EffectiveTLDPlusOne(hello.ServerName)
 	if err != nil {
 		log.Printf("Error parsing TLS ClientHello ServerName: %s -> %s", hello.ServerName, err)

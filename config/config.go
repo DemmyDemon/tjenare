@@ -11,11 +11,10 @@ import (
 )
 
 type ServerConfig struct {
-	TLSPort       int                      `json:"tlsport"`
-	InsecurePort  int                      `json:"insecureport"`
-	DefaultDomain string                   `json:"defaultdomain"`
-	LogFile       string                   `json:"logfile"`
-	Domains       map[string]*DomainConfig `json:"domains"`
+	TLSPort      int                      `json:"tlsport"`
+	InsecurePort int                      `json:"insecureport"`
+	LogFile      string                   `json:"logfile"`
+	Domains      map[string]*DomainConfig `json:"domains"`
 }
 
 type DomainConfig struct {
