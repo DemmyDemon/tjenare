@@ -166,7 +166,7 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 	if strings.HasSuffix(path, "/") {
 		path = path + "index.html"
 	}
-	path = filepath.Clean(domconfig.BasePath + subdomain + path)
+	path = filepath.Clean(domconfig.BasePath + subdomain + domconfig.Subdir + path)
 
 	fileInfo, err := os.Stat(path)
 	if err != nil {

@@ -20,6 +20,7 @@ type ServerConfig struct {
 type DomainConfig struct {
 	BasePath   string                    `json:"basepath"`
 	Default    string                    `json:"default"`
+	Subdir     string                    `json:"subdir"`
 	CertFile   string                    `json:"certfile"`
 	CertTime   time.Time                 `json:"-"`
 	CertConfig *tls.Config               `json:"-"`
