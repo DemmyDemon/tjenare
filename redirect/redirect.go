@@ -1,3 +1,6 @@
+// Package redirect implements a minimalist/simplistic way of redirecting all requests on one port to another.
+// The inteded usage is to permanently redirect all :80 HTTP requests to :443 HTTPS requests, though the
+// ports can be changed by configuration.
 package redirect
 
 import (
@@ -9,7 +12,9 @@ import (
 	"github.com/DemmyDemon/tjenare/config"
 )
 
+// Redirect takes care of the redirection part of tjenare
 type Redirect struct {
+	// TargetPort is the incoming TCP port the redirect will be served on.
 	TargetPort int
 }
 

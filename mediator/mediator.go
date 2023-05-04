@@ -1,3 +1,5 @@
+// Package mediator impolements a mediation between the client and server that results in either serving
+// a file or passing the request on to a backend.
 package mediator
 
 import (
@@ -19,10 +21,13 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
+// Mediator is responsible for mediating a request, either dispatching it to a backend or handling it as a file request.
 type Mediator struct {
+	// ServerConfig is the configuration this mediator is expected to respect.
 	ServerConfig *config.ServerConfig
 }
 
+// Begin sets up and a Mediator and starts a http.Server listening on the given configuration's TLSPort
 func Begin(cfg *config.ServerConfig) {
 	mediator := Mediator{ServerConfig: cfg}
 	srv := &http.Server{
@@ -37,6 +42,7 @@ func Begin(cfg *config.ServerConfig) {
 	log.Fatal(srv.ListenAndServeTLS("", ""))
 }
 
+// ServeHTTP selects the correct backend to hand off to, or serves a file request if there is no matching backend.
 func (med Mediator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	domain, subdomain, err := med.parseRequest(r)
