@@ -189,6 +189,10 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 		return
 	}
 
+	if fileInfo.IsDir() {
+		path += "/index.html"
+	}
+
 	file, err := os.Open(path)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
