@@ -191,6 +191,17 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 
 	if fileInfo.IsDir() {
 		path += "/index.html"
+		fileInfo, err = os.Stat(path)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("The requested file does not exist"))
+			if os.IsNotExist(err) {
+				log.Printf("[%s] Does not exist: %s", r.RemoteAddr, path)
+			} else {
+				log.Printf("[%s] Could not stat %s: %s", r.RemoteAddr, path, err)
+			}
+			return
+		}
 	}
 
 	file, err := os.Open(path)
