@@ -3,6 +3,7 @@
 package mediator
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -100,6 +101,9 @@ func (med Mediator) createReverseProxy(backend *config.BackendConfig) (*httputil
 				r.SetURL(backend.URL)
 			},
 			ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+				if errors.Is(err, context.Canceled) {
+					return // This is not actually an error, though.
+				}
 				log.Printf("[%s] %s error: %s\n", r.RemoteAddr, backend.Target, err)
 				w.WriteHeader(http.StatusBadGateway)
 				w.Write([]byte(`SOMETHING ERROR HAPPEN`))
