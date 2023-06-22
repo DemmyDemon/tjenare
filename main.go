@@ -13,6 +13,7 @@ import (
 
 func main() {
 	log.SetFlags(log.Ltime | log.Ldate)
+	log.SetOutput(os.Stdout)
 	if os.Getenv("DEVMODE") != "" {
 		log.Println("Filename logging enabled: 'Developer mode'")
 		log.SetFlags(log.Lshortfile | log.Ltime | log.Ldate)
