@@ -32,6 +32,8 @@ type DomainConfig struct {
 	Default string `json:"default"`
 	// Subdir represents the fragment of the path between the subdomain and the actual files, such as public_html
 	Subdir string `json:"subdir"`
+	// IndexFallback causes any missing files to fall back to serving index.html
+	IndexFallback bool `json:"index-fallback"`
 	// CertFile is the path to the full chain certificate file to use.
 	CertFile string `json:"certfile"`
 	// CertTime stores the modification time of the CertFile to compare to, in order to know if it changed while the server is running.

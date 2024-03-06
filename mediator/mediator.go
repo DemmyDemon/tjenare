@@ -71,7 +71,10 @@ func (med Mediator) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	med.serveFile(domconfig, domain, subdomain, w, r)
+	retry := med.serveFile(domconfig, subdomain, w, r)
+	if retry {
+		med.serveFile(domconfig, subdomain, w, r)
+	}
 }
 
 func (med Mediator) parseRequest(r *http.Request) (string, string, error) {
@@ -123,6 +126,7 @@ func (med Mediator) getConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config,
 	// log.Printf("GetConfigForClient: ServerName=%s, domain=%s\n", hello.ServerName, domain)
 	domconf, ok := med.ServerConfig.Domains[domain]
 	if !ok {
+		log.Printf("Error looking up configuration for %s", domain)
 		return nil, errors.New("configuration contains no such domain")
 	}
 
@@ -177,7 +181,7 @@ func (med Mediator) handoff(domconfig *config.DomainConfig, domain, subdomain st
 	return true
 }
 
-func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain string, w http.ResponseWriter, r *http.Request) {
+func (med Mediator) serveFile(domconfig *config.DomainConfig, subdomain string, w http.ResponseWriter, r *http.Request) bool {
 	path := r.URL.Path
 	if strings.HasSuffix(path, "/") {
 		path += "index.html"
@@ -187,14 +191,26 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 
 	fileInfo, err := os.Stat(path)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("The requested file does not exist"))
 		if os.IsNotExist(err) {
-			log.Printf("[%s] Does not exist: %s\n", r.RemoteAddr, path)
+			if domconfig.IndexFallback {
+				if strings.HasSuffix(r.URL.Path, "/index.html") {
+					log.Printf("[%s] circular index fallback for %s -> %s\n", r.RemoteAddr, path, r.URL.Path)
+					w.WriteHeader(http.StatusNotFound)
+					w.Write([]byte("The requested file does not exist"))
+					return false // Don't repeat the retry
+				}
+				r.URL.Path = filepath.Dir(r.URL.Path) + "/index.html"
+				log.Printf("[%s] index fallback for %s -> %s\n", r.RemoteAddr, path, r.URL.Path)
+				return true
+			} else {
+				log.Printf("[%s] Does not exist: %s\n", r.RemoteAddr, path)
+			}
 		} else {
 			log.Printf("[%s] Could not stat %s: %s\n", r.RemoteAddr, path, err)
 		}
-		return
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("The requested file does not exist"))
+		return false
 	}
 
 	if fileInfo.IsDir() {
@@ -208,7 +224,7 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 			} else {
 				log.Printf("[%s] Could not stat %s: %s\n", r.RemoteAddr, path, err)
 			}
-			return
+			return false
 		}
 	}
 
@@ -217,7 +233,7 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("The requested file could not be opened"))
 		log.Printf("[%s] Could not open %s: %s\n", r.RemoteAddr, path, err)
-		return
+		return false
 	}
 	defer func() {
 		err := file.Close()
@@ -237,7 +253,8 @@ func (med Mediator) serveFile(domconfig *config.DomainConfig, domain, subdomain 
 	n, err := io.Copy(w, file)
 	if err != nil {
 		log.Printf("[%s] Error encountered sending %s: %s\n", r.RemoteAddr, path, err)
-		return
+		return false
 	}
 	log.Printf("[%s] [%d] %s\n", r.RemoteAddr, n, path)
+	return false
 }
